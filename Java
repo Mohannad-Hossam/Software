@@ -1,0 +1,102 @@
+import java.util.Scanner;
+
+class ShopManager {
+    private Inventory inventory;
+    private Cart cart;
+
+    public ShopManager() {
+        this.inventory = new Inventory();
+        this.cart = new Cart();
+        initializeInventory();
+    }
+
+    public void initializeInventory() {
+        inventory.addPart(new CarPart("Engine Oil", 25.99, 50));
+        inventory.addPart(new CarPart("Brake Pads", 89.99, 30));
+        inventory.addPart(new CarPart("Air Filter", 15.50, 100));
+        inventory.addPart(new CarPart("Battery", 120.00, 20));
+        inventory.addPart(new CarPart("Spark Plugs", 35.00, 75));
+    }
+
+    public void displayMenu() {
+        System.out.println("\n===== CAR PARTS SHOP =====");
+        System.out.println("1. View All Parts");
+        System.out.println("2. Add to Cart");
+        System.out.println("3. View Cart");
+        System.out.println("4. Checkout");
+        System.out.println("5. Exit");
+        System.out.print("Enter choice: ");
+    }
+
+    public void handleViewParts() {
+        inventory.displayAll();
+    }
+
+    public void handleAddToCart(Scanner scanner) {
+        inventory.displayAll();
+
+        System.out.print("\nEnter part number (1-" + inventory.getPartCount() + "): ");
+        int partNum = scanner.nextInt();
+
+        System.out.print("Enter quantity: ");
+        int qty = scanner.nextInt();
+
+        if (partNum >= 1 && partNum <= inventory.getPartCount()) {
+            CarPart part = inventory.getPart(partNum - 1);
+
+            if (qty <= 0) {
+                System.out.println("Invalid quantity!");
+            } else if (qty > part.getStock()) {
+                System.out.println("Not enough stock! Available: " + part.getStock());
+            } else {
+                if (cart.addItem(part, qty)) {
+                    System.out.println("Item added to cart!");
+                } else {
+                    System.out.println("Failed to add item to cart!");
+                }
+            }
+        } else {
+            System.out.println("Invalid part number!");
+        }
+    }
+
+    public void handleViewCart() {
+        if (cart.isEmpty()) {
+            System.out.println("\nYour cart is empty!");
+            return;
+        }
+
+        System.out.println("\n--- Your Cart ---");
+        for (int i = 0; i < cart.getItemCount(); i++) {
+            System.out.print((i + 1) + ". ");
+            cart.getItem(i).display();
+        }
+        System.out.printf("Total: $%.2f%n", cart.getTotal());
+    }
+
+    public void handleCheckout() {
+        if (cart.isEmpty()) {
+            System.out.println("\nYour cart is empty!");
+            return;
+        }
+
+        Order order = new Order(cart);
+        order.displayOrderSummary();
+
+        if (order.processPayment()) {
+            System.out.println("\nPayment processed successfully!");
+            System.out.println("Thank you for your purchase!");
+            cart.clear();
+        } else {
+            System.out.println("\nPayment failed. Please try again.");
+        }
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+}
